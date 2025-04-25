@@ -176,9 +176,13 @@ export function detectHiddenCharacters(text) {
       const info = HIDDEN_CHAR_MAP[char];
       
       // Skip normal line feeds unless they form unusual patterns
+      // We're now more strict about what counts as a normal line feed
       if (char === '\n' && isNormalLineFeed(text, i)) {
         continue;
       }
+      
+      // Check for common watermarking patterns around this character
+      const isWatermarkPattern = checkForWatermarkPatterns(text, i, char);
       
       // Get context (10 characters before and after, if available)
       const contextStart = Math.max(0, i - 10);
@@ -372,6 +376,12 @@ function isNormalLineFeed(text, position) {
   // it's likely a normal paragraph break
   const endsWithPunctuation = /[.!?]\s*$/.test(prevText);
   const startsWithCapital = /^\s*[A-Z]/.test(nextText);
+  
+  // Check for patterns that might indicate watermarking
+  // Even if it looks like a normal paragraph break, check for suspicious patterns
+  if (checkForWatermarkPatterns(text, position, '\n')) {
+    return false;
+  }
   
   return endsWithPunctuation && startsWithCapital;
 }
@@ -597,7 +607,105 @@ export function getCodePointDescription(codePoint) {
  * @returns {boolean} True if the character is hidden
  */
 export function isHiddenCharacter(char) {
-  return !!HIDDEN_CHAR_MAP[char];
+  return HIDDEN_CHAR_MAP[char] !== undefined;
+}
+
+/**
+ * Check for common watermarking patterns around a character
+ * @param {string} text - The full text
+ * @param {number} position - Position of the character
+ * @param {string} char - The character being checked
+ * @returns {boolean} True if a watermarking pattern is detected
+ */
+function checkForWatermarkPatterns(text, position, char) {
+  // Check for common watermarking techniques
+  
+  // 1. Check for patterns of line breaks at regular intervals
+  if (char === '\n') {
+    // Look for line breaks that occur at suspiciously regular intervals
+    const lineBreakPositions = [];
+    let pos = 0;
+    while (pos < text.length) {
+      pos = text.indexOf('\n', pos);
+      if (pos === -1) break;
+      lineBreakPositions.push(pos);
+      pos++;
+    }
+    
+    // Check for regular intervals between line breaks
+    if (lineBreakPositions.length >= 3) {
+      const intervals = [];
+      for (let i = 1; i < lineBreakPositions.length; i++) {
+        intervals.push(lineBreakPositions[i] - lineBreakPositions[i-1]);
+      }
+      
+      // Check if there's a pattern of regular intervals
+      const hasRegularPattern = intervals.some((interval, i, arr) => {
+        if (i < 2) return false;
+        // Check if three consecutive intervals are similar (within 1-2 characters)
+        return Math.abs(interval - arr[i-1]) <= 2 && Math.abs(arr[i-1] - arr[i-2]) <= 2;
+      });
+      
+      if (hasRegularPattern) {
+        return true;
+      }
+    }
+  }
+  
+  // 2. Check for invisible characters in specific patterns
+  // Look for invisible characters that appear at regular intervals
+  if (isHiddenCharacter(char) && char !== '\n') {
+    // Check surrounding text for patterns
+    const surroundingText = text.substring(
+      Math.max(0, position - 100),
+      Math.min(text.length, position + 100)
+    );
+    
+    // Count occurrences of this character in surrounding text
+    let count = 0;
+    for (let i = 0; i < surroundingText.length; i++) {
+      if (surroundingText[i] === char) count++;
+    }
+    
+    // If this character appears multiple times in close proximity, it's suspicious
+    if (count >= 3) {
+      return true;
+    }
+    
+    // Check if this character appears at the beginning of multiple paragraphs
+    const paragraphs = text.split('\n');
+    let paragraphStartCount = 0;
+    for (const paragraph of paragraphs) {
+      if (paragraph.length > 0 && paragraph[0] === char) {
+        paragraphStartCount++;
+      }
+    }
+    
+    if (paragraphStartCount >= 2) {
+      return true;
+    }
+  }
+  
+  // 3. Check for specific patterns of invisible characters between words
+  // This is a common watermarking technique
+  if (isHiddenCharacter(char) && char !== '\n') {
+    // Check if this character appears between words consistently
+    const beforeChar = position > 0 ? text[position - 1] : '';
+    const afterChar = position < text.length - 1 ? text[position + 1] : '';
+    
+    // If it's between two word characters or spaces, it might be watermarking
+    if (/[\w\s]/.test(beforeChar) && /[\w\s]/.test(afterChar)) {
+      // Look for similar patterns elsewhere in the text
+      const pattern = beforeChar + char + afterChar;
+      const patternCount = (text.match(new RegExp(pattern, 'g')) || []).length;
+      
+      if (patternCount >= 2) {
+        return true;
+      }
+    }
+  }
+  
+  return false;
 }
 
 /**
