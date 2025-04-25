@@ -5,6 +5,12 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
@@ -29,7 +35,8 @@ jobs:
           VITE_SHEETS_ENDPOINT: https://script.google.com/macros/s/AKfycbzpdZvbwmCRtHvTLNDWQxFpf2u7Vd1NR4hzGKrRbVJVaGFXj1lkyLEVkIpmguCNZIrO/exec
           
       - name: Deploy to GitHub Pages
-        uses: JamesIves/github-pages-deploy-action@v4
+        uses: peaceiris/actions-gh-pages@v3
         with:
-          folder: dist
-          branch: gh-pages
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
+          cname: watermarkdetector.com

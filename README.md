@@ -25,7 +25,7 @@ Visit [watermarkdetector.com](https://watermarkdetector.com) to use the applicat
 ### Getting Started
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/watermark-detector.git
+   git clone https://github.com/yottoy/watermark-detector.git
    cd watermark-detector
    ```
 
@@ -72,7 +72,7 @@ To set up a custom domain (like watermarkdetector.com):
      185.199.110.153
      185.199.111.153
      ```
-   - Add a CNAME record for www pointing to yourusername.github.io
+   - Add a CNAME record for www pointing to yottoy.github.io
 
 2. In your GitHub repository settings:
    - Go to Settings > Pages
