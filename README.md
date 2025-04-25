@@ -2,27 +2,84 @@
 
 A web-based tool to detect and remove invisible watermarking from text, including zero-width Unicode characters and subtle spacing patterns. Built with React, Vite, and Tailwind CSS. Runs entirely in the browser with analytics integration.
 
+Visit [watermarkdetector.com](https://watermarkdetector.com) to use the application.
+
 ## Features
-- Detects hidden/invisible Unicode characters
-- Analyzes spacing patterns for watermarking
+- Detects hidden/invisible Unicode characters (zero-width spaces, joiners, etc.)
+- Analyzes spacing patterns for statistical watermarking
 - Cleans text by removing hidden characters
-- Copy cleaned text
+- Copy cleaned text with one click
+- Export detailed analysis results
 - Responsive, mobile-friendly UI
+- Privacy-focused: all processing happens in your browser
 
 ## Tech Stack
 - React (with Vite)
 - Tailwind CSS
 - JavaScript (ES6+)
+- Google Analytics for anonymous usage tracking
+- Google Sheets API for analytics collection
 
-## Getting Started
-1. Install dependencies:
+## Development
+
+### Getting Started
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/watermark-detector.git
+   cd watermark-detector
+   ```
+
+2. Install dependencies:
    ```bash
    npm install
    ```
-2. Start the development server:
+
+3. Create a `.env.local` file with your environment variables:
+   ```
+   VITE_GA_MEASUREMENT_ID=G-X4VVRZ3W2Q
+   VITE_SHEETS_ENDPOINT=https://script.google.com/macros/s/AKfycbzpdZvbwmCRtHvTLNDWQxFpf2u7Vd1NR4hzGKrRbVJVaGFXj1lkyLEVkIpmguCNZIrO/exec
+   ```
+
+4. Start the development server:
    ```bash
    npm run dev
    ```
+
+5. Build for production:
+   ```bash
+   npm run build
+   ```
+
+## Deployment
+
+### GitHub Pages Deployment
+
+This project is configured to deploy automatically to GitHub Pages using GitHub Actions:
+
+1. Push your code to the main branch of your GitHub repository
+2. GitHub Actions will automatically build and deploy the site to the gh-pages branch
+3. The site will be available at your GitHub Pages URL or custom domain
+
+### Custom Domain Setup
+
+To set up a custom domain (like watermarkdetector.com):
+
+1. In your domain registrar (e.g., name.com), configure the DNS settings:
+   - Add an A record pointing to GitHub Pages IP addresses:
+     ```
+     185.199.108.153
+     185.199.109.153
+     185.199.110.153
+     185.199.111.153
+     ```
+   - Add a CNAME record for www pointing to yourusername.github.io
+
+2. In your GitHub repository settings:
+   - Go to Settings > Pages
+   - Under "Custom domain", enter your domain (e.g., watermarkdetector.com)
+   - Check "Enforce HTTPS" once the certificate is provisioned
+
+The CNAME file in the public directory ensures your custom domain persists between deployments.
 
 ## Deployment Instructions
 
