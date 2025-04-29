@@ -5,9 +5,11 @@
 /**
  * Analyze spacing patterns in text to detect potential watermarking
  * @param {string} text - The input text to analyze
+ * @param {Array} selectedWatermarks - Array of watermark IDs that should be detected
+ * @param {Object} watermarkOptionToSpacingFeatures - Mapping of watermark IDs to spacing features
  * @returns {Object|null} Analysis results or null if insufficient data
  */
-export function analyzeSpacingPatterns(text) {
+export function analyzeSpacingPatterns(text, selectedWatermarks = [], watermarkOptionToSpacingFeatures = {}) {
   if (!text || text.length < 20) {
     return null; // Not enough text to analyze
   }

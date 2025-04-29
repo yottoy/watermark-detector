@@ -143,9 +143,11 @@ const HIDDEN_CHAR_MAP = {
 /**
  * Detect hidden characters in text
  * @param {string} text - The input text to analyze
+ * @param {Array} selectedWatermarks - Array of watermark IDs that should be detected and removed
+ * @param {Object} watermarkOptionToCharacterCategories - Mapping of watermark IDs to character categories
  * @returns {Object} Object containing cleaned text and detected characters
  */
-export function detectHiddenCharacters(text) {
+export function detectHiddenCharacters(text, selectedWatermarks = [], watermarkOptionToCharacterCategories = {}) {
   if (!text) {
     return { 
       cleanText: '', 
@@ -269,10 +271,19 @@ export function detectHiddenCharacters(text) {
     // Sort by count (descending)
     detectedChars.sort((a, b) => b.count - a.count);
     
-    // Create cleaned text by removing all detected hidden characters
+    // Create cleaned text by removing selected hidden characters
     cleanText = text;
-    for (const charInfo of detectedChars) {
-      cleanText = cleanText.replaceAll(charInfo.char, '');
+    for (const char of detectedChars) {
+      // Only remove characters that are in the selected watermarks list
+      const shouldRemove = selectedWatermarks.some(watermarkId => {
+        const categories = watermarkOptionToCharacterCategories[watermarkId] || [];
+        return categories.includes(char.category);
+      });
+      
+      if (selectedWatermarks.length === 0 || shouldRemove) {
+        // Use a regex to replace all occurrences of this character
+        cleanText = cleanText.replaceAll(char.char, '');
+      }
     }
   }
   

@@ -3,13 +3,13 @@ import './App.css'
 import { detectHiddenCharacters } from './utils/characterDetector'
 import { analyzeSpacingPatterns } from './utils/spacingAnalyzer'
 import { logToGoogleSheets } from './utils/sheetsLogger'
+import { watermarkOptions, getDefaultSelectedWatermarks, watermarkOptionToCharacterCategories, watermarkOptionToSpacingFeatures } from './utils/watermarkOptions'
 import TextInput from './components/TextInput'
 import TextOutput from './components/TextOutput'
 import CharacterAnalysis from './components/CharacterAnalysis'
 import SpacingAnalysis from './components/SpacingAnalysis'
 import Footer from './components/Footer'
-import WatermarkingInfo from './components/WatermarkingInfo'
-import SampleGenerator from './components/SampleGenerator'
+import WatermarkSelection from './components/WatermarkSelection'
 import Header from './components/Header'
 import PrivacyPolicy from './components/PrivacyPolicy'
 
@@ -45,6 +45,8 @@ function App() {
   const [exportData, setExportData] = useState(null)
   const [copySuccess, setCopySuccess] = useState(false)
   const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false)
+  const [selectedWatermarks, setSelectedWatermarks] = useState(getDefaultSelectedWatermarks())
+  const [lastAnalyzedText, setLastAnalyzedText] = useState('')
 
   const handleTextChange = (newText) => {
     setInputText(newText)
@@ -94,6 +96,54 @@ function App() {
       })
   }, [cleanedText]);
 
+  // Function to handle watermark toggle
+  const handleWatermarkToggle = (watermarkId) => {
+    const newSelectedWatermarks = selectedWatermarks.includes(watermarkId)
+      ? selectedWatermarks.filter(id => id !== watermarkId)
+      : [...selectedWatermarks, watermarkId];
+    
+    setSelectedWatermarks(newSelectedWatermarks);
+    
+    // If we've already analyzed text, update the cleaned text based on new selections
+    if (lastAnalyzedText) {
+      updateCleanedText(lastAnalyzedText, newSelectedWatermarks);
+    }
+  };
+  
+  // Function to update cleaned text based on selected watermarks
+  const updateCleanedText = (textToAnalyze, watermarkSelection = selectedWatermarks) => {
+    // Analyze hidden characters with selected watermarks
+    const { 
+      cleanText, 
+      detectedChars, 
+      categories, 
+      confidenceScore: charConfidence,
+      totalHiddenChars: totalChars
+    } = detectHiddenCharacters(textToAnalyze, watermarkSelection, watermarkOptionToCharacterCategories);
+    
+    setCleanedText(cleanText);
+    setHiddenCharacters(detectedChars);
+    setCharacterCategories(categories);
+    setConfidenceScore(charConfidence);
+    setTotalHiddenChars(totalChars);
+    
+    // Analyze spacing patterns with selected watermarks
+    const spacingResults = analyzeSpacingPatterns(textToAnalyze, watermarkSelection, watermarkOptionToSpacingFeatures);
+    setSpacingAnalysis(spacingResults);
+    
+    // Update export data
+    setExportData({
+      originalText: textToAnalyze,
+      cleanedText: cleanText,
+      hiddenCharacters: detectedChars,
+      characterCategories: categories,
+      characterConfidence: charConfidence,
+      spacingAnalysis: spacingResults,
+      selectedWatermarks: watermarkSelection,
+      timestamp: new Date().toISOString()
+    });
+  };
+
   const analyzeText = (sampleText) => {
     // If sample text is provided, use it instead of the input text
     const textToAnalyze = sampleText || inputText
@@ -117,45 +167,17 @@ function App() {
     })
     
     setIsAnalyzing(true)
+    setLastAnalyzedText(textToAnalyze)
     
     // Process in next tick to allow UI to update
     setTimeout(() => {
-      // Analyze hidden characters
-      const { 
-        cleanText, 
-        detectedChars, 
-        categories, 
-        confidenceScore: charConfidence,
-        totalHiddenChars: totalChars
-      } = detectHiddenCharacters(textToAnalyze)
-      
-      setCleanedText(cleanText)
-      setHiddenCharacters(detectedChars)
-      setCharacterCategories(categories)
-      setConfidenceScore(charConfidence)
-      setTotalHiddenChars(totalChars)
-      
-      // Analyze spacing patterns
-      const spacingResults = analyzeSpacingPatterns(textToAnalyze)
-      setSpacingAnalysis(spacingResults)
-      
-      // Prepare export data
-      const analysisData = {
-        originalText: textToAnalyze,
-        cleanedText: cleanText,
-        hiddenCharacters: detectedChars,
-        characterCategories: categories,
-        characterConfidence: charConfidence,
-        spacingAnalysis: spacingResults,
-        timestamp: new Date().toISOString()
-      };
-      
-      setExportData(analysisData);
+      updateCleanedText(textToAnalyze);
+      setIsAnalyzing(false);
       
       // Log to Google Sheets (non-blocking, won't affect user experience)
-      logToGoogleSheets(analysisData);
-      
-      setIsAnalyzing(false)
+      if (exportData) {
+        logToGoogleSheets(exportData);
+      }
     }, 10)
   }
 
@@ -193,12 +215,19 @@ function App() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div>
             <TextInput 
-              onAnalyze={analyzeText} 
-              isAnalyzing={isAnalyzing}
               textTooLong={textTooLong}
               onTextChange={handleTextChange}
-            />
-            <SampleGenerator onSelectSample={analyzeText} />
+            >
+              {/* Watermark Selection Component */}
+              <WatermarkSelection 
+                watermarkOptions={watermarkOptions}
+                selectedWatermarks={selectedWatermarks}
+                onWatermarkToggle={handleWatermarkToggle}
+                onAnalyze={() => analyzeText()}
+                isAnalyzing={isAnalyzing}
+                disabled={!inputText.trim() || isAnalyzing || textTooLong}
+              />
+            </TextInput>
           </div>
           
           <div className="space-y-6">
@@ -224,9 +253,6 @@ function App() {
             {spacingAnalysis && (
               <SpacingAnalysis analysis={spacingAnalysis} />
             )}
-            
-            {/* About Watermarking Information */}
-            <WatermarkingInfo />
           </div>
         </div>
       </div>
