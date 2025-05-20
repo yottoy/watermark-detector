@@ -12,6 +12,7 @@ import Footer from './components/Footer'
 import WatermarkSelection from './components/WatermarkSelection'
 import Header from './components/Header'
 import PrivacyPolicy from './components/PrivacyPolicy'
+import AdSense from './components/AdSense'
 
 // Initialize Google Analytics
 import ReactGA from 'react-ga4'
@@ -212,6 +213,15 @@ function App() {
       <Header />
       
       <div className="container mx-auto px-4 py-8">
+        {/* Top Ad */}
+        <div className="mb-8">
+          <AdSense 
+            slot="1234567890" 
+            format="horizontal"
+            className="w-full"
+          />
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div>
             <TextInput 
@@ -251,17 +261,28 @@ function App() {
             )}
             
             {spacingAnalysis && (
-              <SpacingAnalysis analysis={spacingAnalysis} />
+              <SpacingAnalysis 
+                analysis={spacingAnalysis}
+              />
             )}
           </div>
         </div>
+
+        {/* Bottom Ad */}
+        <div className="mt-8">
+          <AdSense 
+            slot="0987654321" 
+            format="horizontal"
+            className="w-full"
+          />
+        </div>
       </div>
-      <Footer 
-        companyName="Watermark Detector" 
-        privacyPolicyLink="#privacy" 
-        onPrivacyPolicyClick={() => setShowPrivacyPolicy(true)} 
-      />
-      {showPrivacyPolicy && <PrivacyPolicy onClose={() => setShowPrivacyPolicy(false)} />}
+
+      <Footer onPrivacyClick={() => setShowPrivacyPolicy(true)} />
+      
+      {showPrivacyPolicy && (
+        <PrivacyPolicy onClose={() => setShowPrivacyPolicy(false)} />
+      )}
     </div>
   )
 }

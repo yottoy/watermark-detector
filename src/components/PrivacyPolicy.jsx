@@ -1,4 +1,5 @@
 import React from 'react'
+import AdSense from './AdSense'
 
 const PrivacyPolicy = ({ onClose }) => {
   return (
@@ -15,6 +16,15 @@ const PrivacyPolicy = ({ onClose }) => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
+          </div>
+          
+          {/* Top Ad */}
+          <div className="mb-6">
+            <AdSense 
+              slot="2468101214" 
+              format="horizontal"
+              className="w-full"
+            />
           </div>
           
           <div className="prose dark:prose-invert max-w-none">
@@ -142,6 +152,15 @@ const PrivacyPolicy = ({ onClose }) => {
               If you have questions about this Privacy Policy, email us at:<br/>
               📧 privacy@watermarkdetector.com
             </p>
+          </div>
+          
+          {/* Bottom Ad */}
+          <div className="mt-6">
+            <AdSense 
+              slot="13579111315" 
+              format="horizontal"
+              className="w-full"
+            />
           </div>
         </div>
       </div>

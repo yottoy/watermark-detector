@@ -5,8 +5,215 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="google-adsense-account" content="ca-pub-3377844943647950">
-    <title>Watermark Detector</title>
-    <meta name="description" content="Detect and remove invisible watermarking from text, including zero-width Unicode characters and subtle spacing patterns." />
+    <title>Watermark Detector - Detect & Remove AI Text Watermarking</title>
+    <meta name="description" content="Detect and remove invisible watermarking from text, including zero-width Unicode characters and subtle spacing patterns used by AI systems to mark generated content." />
+    
+    <!-- Critical CSS -->
+    <style>
+      /* Critical CSS for initial render */
+      :root {
+        --primary-color: #3b82f6;
+        --text-color: #1f2937;
+        --bg-color: #f9fafb;
+        --dark-text: #f3f4f6;
+        --dark-bg: #111827;
+      }
+
+      body {
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        background-color: var(--bg-color);
+        color: var(--text-color);
+      }
+
+      .dark {
+        background-color: var(--dark-bg);
+        color: var(--dark-text);
+      }
+
+      .container {
+        width: 100%;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 1rem;
+      }
+
+      .min-h-screen {
+        min-height: 100vh;
+      }
+
+      .grid {
+        display: grid;
+        gap: 1.5rem;
+      }
+
+      @media (min-width: 1024px) {
+        .lg\:grid-cols-2 {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+
+      /* Critical button styles */
+      button {
+        cursor: pointer;
+        padding: 0.5rem 1rem;
+        border-radius: 0.375rem;
+        font-weight: 500;
+        transition: all 0.2s;
+      }
+
+      /* Critical input styles */
+      input, textarea {
+        width: 100%;
+        padding: 0.5rem;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.375rem;
+        background-color: white;
+      }
+
+      .dark input, .dark textarea {
+        background-color: #1f2937;
+        border-color: #374151;
+        color: var(--dark-text);
+      }
+
+      /* Critical loading states */
+      .loading {
+        opacity: 0.7;
+        pointer-events: none;
+      }
+
+      /* Critical error states */
+      .error {
+        color: #ef4444;
+        padding: 0.5rem;
+        border-radius: 0.375rem;
+        background-color: #fee2e2;
+      }
+
+      .dark .error {
+        background-color: #7f1d1d;
+      }
+    </style>
+    
+    <!-- Preload critical assets -->
+    <link rel="preload" href="/src/main.jsx" as="script" />
+    <link rel="preload" href="/src/index.css" as="style" />
+    
+    <!-- Security Headers -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://pagead2.googlesyndication.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://www.google-analytics.com;">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta http-equiv="Strict-Transport-Security" content="max-age=31536000; includeSubDomains">
+    
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Watermark Detector",
+      "description": "Detect and remove invisible watermarking from text, including zero-width Unicode characters and subtle spacing patterns.",
+      "url": "https://watermarkdetector.com",
+      "applicationCategory": "UtilityApplication",
+      "operatingSystem": "Web",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "author": {
+        "@type": "Organization",
+        "name": "Watermark Detector",
+        "url": "https://watermarkdetector.com"
+      }
+    }
+    </script>
+
+    <!-- FAQ Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [{
+        "@type": "Question",
+        "name": "What is AI text watermarking?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "AI text watermarking is a technique used by AI systems to embed invisible markers in generated text, including zero-width Unicode characters and subtle spacing patterns."
+        }
+      }, {
+        "@type": "Question",
+        "name": "How does the Watermark Detector work?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Our tool analyzes text for hidden characters and spacing patterns commonly used in AI watermarking, then removes them while preserving the original content."
+        }
+      }, {
+        "@type": "Question",
+        "name": "Is my text safe when using this tool?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, all text processing happens locally in your browser. We never store or transmit your content to our servers."
+        }
+      }]
+    }
+    </script>
+
+    <!-- HowTo Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "HowTo",
+      "name": "How to Detect and Remove AI Text Watermarks",
+      "description": "Learn how to use our tool to detect and remove invisible watermarks from AI-generated text.",
+      "step": [{
+        "@type": "HowToStep",
+        "name": "Paste your text",
+        "text": "Copy and paste the text you want to analyze into the input box."
+      }, {
+        "@type": "HowToStep",
+        "name": "Select watermark types",
+        "text": "Choose which types of watermarks you want to detect and remove."
+      }, {
+        "@type": "HowToStep",
+        "name": "Analyze text",
+        "text": "Click the 'Analyze' button to scan for watermarks."
+      }, {
+        "@type": "HowToStep",
+        "name": "Review results",
+        "text": "View the detected watermarks and get your cleaned text."
+      }]
+    }
+    </script>
+
+    <!-- Article Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      "headline": "Understanding AI Text Watermarking",
+      "description": "Learn about invisible watermarking techniques used in AI-generated text and how to detect them.",
+      "image": "https://watermarkdetector.com/og-image.jpg",
+      "author": {
+        "@type": "Organization",
+        "name": "Watermark Detector",
+        "url": "https://watermarkdetector.com"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Watermark Detector",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://watermarkdetector.com/logo.png"
+        }
+      },
+      "datePublished": "2024-03-20",
+      "dateModified": "2024-03-20"
+    }
+    </script>
+    
     <!-- Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-X4VVRZ3W2Q"></script>
     <script>
@@ -15,6 +222,7 @@
       gtag('js', new Date());
       gtag('config', 'G-X4VVRZ3W2Q');
     </script>
+    
     <!-- Google AdSense -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3377844943647950"
      crossorigin="anonymous"></script>
