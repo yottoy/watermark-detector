@@ -220,16 +220,49 @@
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
-      gtag('config', 'G-X4VVRZ3W2Q');
+      
+      // Configure GA4 with privacy-focused settings
+      gtag('config', 'G-X4VVRZ3W2Q', {
+        'anonymize_ip': true,
+        'allow_google_signals': false,
+        'allow_ad_personalization_signals': false,
+        'cookie_flags': 'SameSite=None;Secure'
+      });
+
+      // Custom event tracking functions
+      window.trackAnalysis = function(contentType, hasWatermarks, watermarkTypes) {
+        gtag('event', 'content_analysis', {
+          'content_type': contentType,
+          'has_watermarks': hasWatermarks,
+          'watermark_types': watermarkTypes,
+          'non_interaction': true
+        });
+      };
+
+      window.trackUserAction = function(action, details) {
+        gtag('event', 'user_action', {
+          'action_type': action,
+          'action_details': details,
+          'non_interaction': false
+        });
+      };
+
+      window.trackError = function(errorType, errorDetails) {
+        gtag('event', 'error_occurred', {
+          'error_type': errorType,
+          'error_details': errorDetails,
+          'non_interaction': true
+        });
+      };
     </script>
     
     <!-- Google AdSense -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3377844943647950"
      crossorigin="anonymous"></script>
-    <script type="module" crossorigin src="/assets/index-c9358888.js"></script>
+    <script type="module" crossorigin src="/assets/index-133ae872.js"></script>
     <link rel="modulepreload" crossorigin href="/assets/vendor-57209f9c.js">
     <link rel="modulepreload" crossorigin href="/assets/utils-bfc678aa.js">
-    <link rel="stylesheet" href="/assets/index-711185c5.css">
+    <link rel="stylesheet" href="/assets/index-c0baa119.css">
   </head>
   <body>
     <div id="root"></div>
