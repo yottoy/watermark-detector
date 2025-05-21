@@ -27,6 +27,78 @@ if (import.meta.env.DEV) {
   ReactGA.set({ debug: true });
 }
 
+// Custom event tracking functions
+const trackAnalysis = (analysisData) => {
+  const {
+    confidenceScore,
+    totalHiddenChars,
+    categories,
+    spacingAnalysis,
+    watermarkSummary
+  } = analysisData;
+
+  // Track overall analysis results
+  ReactGA.event({
+    category: 'Analysis',
+    action: 'Analysis Complete',
+    label: confidenceScore >= 70 ? 'High Confidence' : confidenceScore >= 40 ? 'Medium Confidence' : 'Low Confidence',
+    value: confidenceScore,
+    non_interaction: true,
+    custom_map: {
+      dimension1: 'confidence_score',
+      dimension2: 'total_hidden_chars',
+      dimension3: 'category_count',
+      dimension4: 'has_spacing_patterns',
+      dimension5: 'primary_strategy'
+    },
+    dimension1: confidenceScore,
+    dimension2: totalHiddenChars,
+    dimension3: categories.length,
+    dimension4: spacingAnalysis?.patternDetected ? 'yes' : 'no',
+    dimension5: watermarkSummary?.primaryStrategy || 'none'
+  });
+
+  // Track detected categories
+  categories.forEach(category => {
+    ReactGA.event({
+      category: 'Analysis',
+      action: 'Category Detected',
+      label: category.category,
+      value: category.count,
+      non_interaction: true
+    });
+  });
+
+  // Track spacing patterns if detected
+  if (spacingAnalysis?.patternDetected) {
+    ReactGA.event({
+      category: 'Analysis',
+      action: 'Spacing Pattern Detected',
+      label: spacingAnalysis.patternDetected,
+      value: spacingAnalysis.confidenceScore,
+      non_interaction: true
+    });
+  }
+};
+
+const trackUserAction = (action, details) => {
+  ReactGA.event({
+    category: 'User Action',
+    action: action,
+    label: details,
+    non_interaction: false
+  });
+};
+
+const trackError = (errorType, errorDetails) => {
+  ReactGA.event({
+    category: 'Error',
+    action: errorType,
+    label: errorDetails,
+    non_interaction: true
+  });
+};
+
 function App() {
   // Track page view on component mount
   useEffect(() => {
@@ -69,23 +141,14 @@ function App() {
         newText.length <= 50000 ? '10K-50K' :
         newText.length <= 100000 ? '50K-100K' : '100K+';
       
-      ReactGA.event({
-        category: 'Text Input',
-        action: 'Text Length',
-        label: lengthRange
-      });
+      trackUserAction('Text Input', `Length: ${lengthRange}`);
     }
   }
 
   const copyCleanedText = useCallback(() => {
     if (!cleanedText) return
     
-    // Track copy event
-    ReactGA.event({
-      category: 'User Action',
-      action: 'Copy Cleaned Text',
-      value: Math.min(Math.floor(cleanedText.length / 100), 1000) // Value capped at 1000
-    })
+    trackUserAction('Copy Cleaned Text', `Length: ${cleanedText.length}`);
     
     navigator.clipboard.writeText(cleanedText)
       .then(() => {
@@ -94,6 +157,7 @@ function App() {
       })
       .catch(err => {
         console.error('Failed to copy text: ', err)
+        trackError('Copy Failed', err.message);
       })
   }, [cleanedText]);
 
@@ -104,6 +168,7 @@ function App() {
       : [...selectedWatermarks, watermarkId];
     
     setSelectedWatermarks(newSelectedWatermarks);
+    trackUserAction('Watermark Toggle', `Watermark: ${watermarkId}, Selected: ${newSelectedWatermarks.includes(watermarkId)}`);
     
     // If we've already analyzed text, update the cleaned text based on new selections
     if (lastAnalyzedText) {
@@ -146,37 +211,31 @@ function App() {
   };
 
   const analyzeText = (sampleText) => {
-    // If sample text is provided, use it instead of the input text
     const textToAnalyze = sampleText || inputText
     
     if (!textToAnalyze) return
     if (textToAnalyze.length > CHARACTER_LIMIT) {
       setTextTooLong(true)
+      trackError('Text Too Long', `Length: ${textToAnalyze.length}`);
       return
     }
     
-    // If sample text is provided, update the input text
     if (sampleText) {
       setInputText(sampleText)
     }
     
-    // Track analysis event
-    ReactGA.event({
-      category: 'Analysis',
-      action: 'Analyze Text',
-      value: Math.min(Math.floor(inputText.length / 100), 1000) // Value capped at 1000
-    })
+    trackUserAction('Analyze Text', `Length: ${textToAnalyze.length}`);
     
     setIsAnalyzing(true)
     setLastAnalyzedText(textToAnalyze)
     
-    // Process in next tick to allow UI to update
     setTimeout(() => {
       updateCleanedText(textToAnalyze);
       setIsAnalyzing(false);
       
-      // Log to Google Sheets (non-blocking, won't affect user experience)
+      // Track analysis results
       if (exportData) {
+        trackAnalysis(exportData);
         logToGoogleSheets(exportData);
       }
     }, 10)
@@ -186,19 +245,12 @@ function App() {
   const handleExport = () => {
     if (!exportData) return
     
-    // Track export event
-    ReactGA.event({
-      category: 'User Action',
-      action: 'Export Results',
-      label: exportData.characterConfidence > 70 ? 'High Confidence' : 'Low Confidence'
-    })
+    trackUserAction('Export Results', `Confidence: ${exportData.characterConfidence}`);
     
-    // Create a JSON blob
     const jsonData = JSON.stringify(exportData, null, 2)
     const blob = new Blob([jsonData], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
     
-    // Create a download link and trigger it
     const a = document.createElement('a')
     a.href = url
     a.download = `watermark-analysis-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.json`
@@ -213,15 +265,6 @@ function App() {
       <Header />
       
       <div className="container mx-auto px-4 py-8">
-        {/* Top Ad */}
-        <div className="mb-8">
-          <AdSense 
-            slot="1234567890" 
-            format="horizontal"
-            className="w-full"
-          />
-        </div>
-
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div>
             <TextInput 
